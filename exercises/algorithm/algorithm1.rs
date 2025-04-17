@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -56,6 +55,17 @@ impl<T> LinkedList<T> {
         self.length += 1;
     }
 
+    fn add_node(&mut self, node: NonNull<Node<T>>){
+        unsafe {(*node.as_ptr()).next = None;}
+        let node_ptr = Some(node);
+        match self.end{
+            None => self.start = node_ptr,
+            Some(end_ptr) => unsafe{(*end_ptr.as_ptr()).next = node_ptr}
+        }
+        self.end = node_ptr;
+        self.length += 1;
+    }
+
     pub fn get(&mut self, index: i32) -> Option<&T> {
         self.get_ith_node(self.start, index)
     }
@@ -69,14 +79,40 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+}
+
+impl<T: Ord> LinkedList<T> {
+    pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
 		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut list_c = Self::new();
+        let mut pa = list_a.start;
+        let mut pb = list_b.start;
+        while let (Some(a_ptr), Some(b_ptr)) = (pa, pb){
+            unsafe{
+                if (*a_ptr.as_ptr()).val < (*b_ptr.as_ptr()).val{
+                    pa = (*a_ptr.as_ptr()).next;
+                    list_c.add_node(a_ptr);
+                }
+                else{
+                    pb = (*b_ptr.as_ptr()).next;
+                    list_c.add_node(b_ptr);
+                }
+            }
         }
+        while let Some(a_ptr) = pa{
+            unsafe{
+                pa = (*a_ptr.as_ptr()).next;
+                list_c.add_node(a_ptr);
+            }
+        }
+        while let Some(b_ptr) = pb{
+            unsafe{
+                pb = (*b_ptr.as_ptr()).next;
+                list_c.add_node(b_ptr);
+            }
+        }
+        list_c
 	}
 }
 

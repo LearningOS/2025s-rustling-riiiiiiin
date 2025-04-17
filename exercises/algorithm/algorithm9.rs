@@ -2,10 +2,10 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
+use std::mem::swap;
 
 pub struct Heap<T>
 where
@@ -38,6 +38,23 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count += 1;
+        if self.count > 1{
+            let mut child_idx = self.count;
+            while child_idx > 1{
+                let parent_idx = self.parent_idx(child_idx);
+                if (self.comparator)(&self.items[child_idx], &self.items[parent_idx]){
+                    self.items.swap(child_idx, parent_idx);
+                    child_idx = parent_idx;
+                }
+                else{
+                    break;
+                }
+            }
+            // println!("{:?}", &self.items);
+            // println!("{}:{}",child_idx,parent_idx);
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,7 +75,17 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+		let left_idx = self.left_child_idx(idx);
+        let right_idx = self.right_child_idx(idx);
+        if right_idx <= self.count{
+            if (self.comparator)(&self.items[left_idx], &self.items[right_idx])
+            {left_idx}
+            else 
+            {right_idx}
+        }
+        else{
+            if left_idx <= self.count {left_idx} else { 0 }
+        }
     }
 }
 
@@ -84,8 +111,29 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.count == 0 {
+            None
+        }
+        else if self.count == 1{
+            self.count = 0;
+            self.items.pop()
+        }
+        else{
+            self.items.swap(1, self.count);
+            self.count -= 1;
+            let mut cur:usize = 1;
+            while cur <= self.count && self.children_present(cur){
+                let child_idx = self.smallest_child_idx(cur);
+                if (self.comparator)(&self.items[cur], &self.items[child_idx]){
+                    break;
+                }
+                else{
+                    self.items.swap(cur, child_idx);
+                    cur = child_idx;
+                }
+            }
+            self.items.pop()
+        }
     }
 }
 
